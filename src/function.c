@@ -4,19 +4,12 @@
 #include <ctype.h>
 #include "function.h"
 
-void crear_dir(char*archivo)
-{
-    printf("Introduzca el archivo a abrir: ");
-    setbuf(stdin,NULL);
-    gets(archivo);
-}
-
-void actualizar_fichero(char*archivo, int i)
+void actualizar_fichero(char*file, int i)
 {
     char cadena1[301];
     FILE*p;
 
-    if((p = fopen(archivo, "a")) == NULL)
+    if((p = fopen(file, "a")) == NULL)
         printf("File couln't be opened\n");
 
     else
@@ -39,13 +32,13 @@ void actualizar_fichero(char*archivo, int i)
     }
 }
 
-void llenar_fichero(char*archivo)
+void llenar_fichero(char*file)
 {
     char cadena1[301];
     unsigned short int i = 2;
     FILE*p;
 
-    if((p = fopen(archivo, "w")) == NULL)
+    if((p = fopen(file, "w")) == NULL)
         printf("File couln't be opened\n");
 
     else
@@ -68,13 +61,13 @@ void llenar_fichero(char*archivo)
     }
 }
 
-int leer_fichero(char*archivo, int i)
+int leer_fichero(char*file, int i)
 {
     char cadena1[301];
 
     FILE*p;
 
-    if((p = fopen(archivo, "r")) == NULL)
+    if((p = fopen(file, "r")) == NULL)
         printf("Can't open file\n");
 
     else
@@ -91,32 +84,3 @@ int leer_fichero(char*archivo, int i)
     return i;
 }
 
-void prueba(char*archivo)
-{
-    char cadena[2], cadena1[301];
-    FILE*fPtr;
-    int i = 1;
-
-    if((fPtr = fopen(archivo, "r")) == NULL)
-    {
-        system("clear");
-        llenar_fichero(archivo);
-    }
-    else
-    {
-        system("clear");
-        setbuf(stdin,NULL);
-        fgets(cadena, 2, fPtr);
-        if(cadena[0] == '\0')
-        {
-            fclose(fPtr);
-            llenar_fichero(archivo);
-        }
-        else
-        {
-            fclose(fPtr);
-            i = leer_fichero(archivo, i);
-            actualizar_fichero(archivo, i);
-        }
-    }
-}

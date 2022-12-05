@@ -1,14 +1,17 @@
 #include <stdio.h>
 #include "function.h"
+#include "var.h"
+
+char file[100];
+char dir[100];
 
 int main()
 {
-    char archivo[100];
+    filename(file);
+    savedefault(file);
 
-    crear_dir(archivo);
-    prueba(archivo);
 
-    //leer_fichero(archivo);
+    //leer_fichero(file);
 
     return 0;
 }
