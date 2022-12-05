@@ -8,7 +8,7 @@
             "name": "C/C++: gcc Compilar y depurar el archivo activo",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${fileDirname}/Texed",
+            "program": "${fileDirname}/main",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

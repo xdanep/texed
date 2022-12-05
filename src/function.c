@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include "function.h"
 
 void crear_dir(char*archivo)
 {

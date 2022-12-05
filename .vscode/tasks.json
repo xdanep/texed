@@ -10,7 +10,7 @@
 				"-g",
 				"*.c",
 				"-o",
-				"${fileDirname}/Texed"
+				"${fileDirname}/main"
 			],
 			"options": {
 				"cwd": "${fileDirname}"
