@@ -10,8 +10,25 @@
 
 void filename(char*file)
 {
+    char dirl[7];
+    int i;
+
+    system("clear");
+    printf("Open file\n");
+    printf(">");
     setbuf(stdin,NULL);
     gets(file);
+
+    for(i = 0; i < 6; i++)
+        dirl[i] = file[i];
+
+    if(strcmp(dirl, "/home/") == 0)
+    {
+        strcpy(dir, file);
+        savefile();
+    }
+    else
+        savedefault(file);
 }
 
 void savedefault(char*file)
@@ -52,30 +69,22 @@ void savedefault(char*file)
     strcat(dirl, file);
     strcpy(dir, dirl);
 
-    openfile(file);
+    savefile();
     
     free(user);
 }
 
-void openfile()
+void savefile()
 {
     FILE*fPtr;
 
-    if((fPtr = fopen(dir, "w")) == NULL)
+    if((fPtr = fopen(dir, "a+")) == NULL)
     {
-        printf("Can not open file.\n");
+        printf("Can not open the file\n");
     }
     else
     {
-        fprintf(fPtr, "prueba");
         system("clear");
     }
     fclose(fPtr);
 }
-
-/*
-Caso 1: guardado por defecto
-caso 2: guardado por direccion
-variante 1: nuevo archivo
-variante 2: archivo existente
-*/
