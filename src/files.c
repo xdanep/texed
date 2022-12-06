@@ -7,7 +7,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/stat.h>
-#include <ncurses.h>
 
 void filename(char*file)
 {
@@ -86,77 +85,7 @@ void savefile()
     else
     {
         system("clear");
-        start(fPtr);
+        fclose(fPtr);
+        startf();
     }
-    fclose(fPtr);
-}
-
-void start(FILE*fPtr)
-{
-    initscr();
-    int x = 0, y = 0;
-    int key;
-    int key2;
-
-    if(has_colors())
-    start_color();
-    init_pair(1, COLOR_WHITE, COLOR_BLACK);
-    attron(COLOR_PAIR(1));//activa pareja 1
-    keypad(stdscr, 1); //activa teclas especiales
-    cbreak(); //pulsacion instantanea
-    refresh();
-
-    while(1)
-    {   
-        echo();
-        key2 = getch();
-        refresh();
-
-        if(key == KEY_UP)//up
-        {
-            y--;
-            move(y, x);
-            refresh();
-        }
-        if(key == KEY_DOWN)//down
-        {
-            y++;
-            move(y, x);
-            refresh();
-        }
-        if(key == KEY_LEFT)//left
-        {
-            x--;
-            move(y, x);
-            refresh();
-        }
-        if(key == KEY_RIGHT)//right
-        {
-            x++;
-            move(y, x);
-            refresh();
-        }
-        if(key == 27)
-        {
-            break;
-        }
-        if(key == 13)
-        {
-            y--;
-            x = 0;
-            move(y, x);
-            fprintf(fPtr, "\r");
-            refresh();
-        }
-        if(key == 8)
-        {
-            x--;
-            move(y, x);
-            refresh();
-        }
-    }
-    clear();
-    endwin();
-
-    return;
 }
