@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <sys/ioctl.h>
 
-struct termios orig_termios;
+struct editorConfig E;
 
 void disableRawMode() {
     // Set terminal attributes
