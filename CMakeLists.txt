@@ -8,4 +8,6 @@ add_executable(texed
         src/files.c
         src/files.h
         src/terminal.c
-        src/terminal.h)
+        src/terminal.h
+        src/editor.c
+        src/editor.h)
