@@ -5,11 +5,12 @@
 #define TEXED_EDITOR_H
 // Variables
 
-
 // Function prototypes
+// void abAppend(struct abuf *ab, const char *s, int len);
+// void abFree(struct abuf *ab);
+// void editorDrawRows(struct abuf *ab);
 void editorRefreshScreen();
-void editorDrawRows();
+void initEditor();
 char editorReadKey();
 void editorProcessKeypress();
-void initEditor();
 #endif //TEXED_EDITOR_H
