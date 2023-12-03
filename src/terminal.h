@@ -8,4 +8,5 @@
 // Function prototypes
 void disableRawMode();
 void enableRawMode();
+void die(const char *s);
 #endif //TEXED_TERMINAL_H
