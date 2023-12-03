@@ -11,6 +11,7 @@
 // void editorDrawRows(struct abuf *ab);
 void editorRefreshScreen();
 void initEditor();
+void editorMoveCursor(char key);
 char editorReadKey();
 void editorProcessKeypress();
 #endif //TEXED_EDITOR_H
