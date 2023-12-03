@@ -8,7 +8,24 @@
 #include "files.h"
 #include "terminal.h"
 #include "editor.h"
+/*** Output ***/
+void editorRefreshScreen() {
+    write(STDOUT_FILENO, "\x1b[2J", 4); // Clear screen
+    write(STDOUT_FILENO, "\x1b[H", 3);  // Reposition cursor
 
+    editorDrawRows();
+
+    write(STDOUT_FILENO, "\x1b[H", 3);  // Reposition cursor
+}
+
+void editorDrawRows() {
+    int y;
+    for (y = 0; y < 24; y++) {
+        write(STDOUT_FILENO, "~\r\n", 3);
+    }
+}
+
+/*** Input ***/
 char editorReadKey() {
     int nread;
     char c;
@@ -25,9 +42,15 @@ void editorProcessKeypress() {
 
     // Check if character is a control character
     switch (c) {
-        case CTRL_KEY('q'):
-            fclose(fileIn);
+        case CTRL_KEY('q'): // Quit
+            write(STDOUT_FILENO, "\x1b[2J", 4);  // Clear screen
+            write(STDOUT_FILENO, "\x1b[H", 3);   // Reposition cursor
+            fclose(fileIn);                         // Close file
             exit(EXIT_SUCCESS);
             break;
     }
+}
+
+void initEditor() {
+    if (getWindowSize(&E.screenrows, &E.screencols) == -1) die("getWindowSize");
 }

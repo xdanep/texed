@@ -7,21 +7,22 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/ioctl.h>
 
 struct termios orig_termios;
 
 void disableRawMode() {
     // Set terminal attributes
-    if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios) == -1)
+    if(tcsetattr(STDIN_FILENO, TCSAFLUSH, &E.orig_termios) == -1)
         die("tcsetattr");
 }
 
 void enableRawMode() {
     // Get terminal attributes
-    if (tcgetattr(STDIN_FILENO, &orig_termios) == -1) die("tcgetattr");
+    if (tcgetattr(STDIN_FILENO, &E.orig_termios) == -1) die("tcgetattr");
     atexit(disableRawMode);
 
-    struct termios raw = orig_termios;
+    struct termios raw = E.orig_termios;
 
     // Set terminal attributes
     raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON); // Input flags
@@ -37,7 +38,23 @@ void enableRawMode() {
 
 // Print error message and exit
 void die(const char *s) {
+    write(STDOUT_FILENO, "\x1b[2J", 4); // Clear screen
+    write(STDOUT_FILENO, "\x1b[H", 3);  // Reposition cursor
+
     // Print error message
     perror(s);
     exit(EXIT_FAILURE);
+}
+
+int getWindowSize(int *rows, int *cols) {
+    struct winsize ws;
+
+    // Get window size
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0) {
+        return -1;
+    } else {
+        *cols = ws.ws_col;
+        *rows = ws.ws_row;
+        return 0;
+    }
 }

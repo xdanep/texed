@@ -14,6 +14,7 @@ int main(int argc, char *argv[]) {
     // Variables
     char c = '\0';
 
+    /*
     // Check if file name was provided
     if (argc < 2) {
         fprintf(stderr,"Usage: %s <filename>\n", argv[0]);
@@ -21,10 +22,13 @@ int main(int argc, char *argv[]) {
     } else {
         makeFile(argv[1]);
     }
+     */
     enableRawMode();        // Enable raw mode
+    initEditor();           // Initialize editor
 
     // Read from terminal
     while(1) {
+        editorRefreshScreen();
         editorProcessKeypress();
     }
 }
