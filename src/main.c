@@ -1,30 +1,31 @@
 //
-// Created by xdanep on 2/12/23.
+// Created by xdanep on 9/11/23.
 //
-#include <stdio.h>
-#include <stdlib.h>
-#include "files.h"
-#include "terminal.h"
-#include "editor.h"
+#include <string.h>
+#include "includes/file.h"
+#include "includes/editor.h"
+#include "includes/screen.h"
+#include "includes/cli.h"
+
+char *fileDir = NULL;
+char *tempFile = NULL;
 
 int main(int argc, char *argv[]) {
-    // Variables
-    char c = '\0';
+    unsigned int mode;              // Mode
 
-    // Check if file name was provided
-    if (argc < 2) {
-        fprintf(stderr,"Usage: %s <filename>\n", argv[0]);
-        exit(EXIT_FAILURE);
-    } else {
-        makeFile(argv[1]);
-    }
+    checkArgs(argc, argv);          // Check arguments
+    createDirs(argv[1]);
 
-    enableRawMode();        // Enable raw mode
-    initEditor();           // Initialize editor
+    // Create file
+    mode = makeTextFile(fileDir);
 
-    // Read from terminal
-    while(1) {
-        editorRefreshScreen();
-        editorProcessKeypress();
+    startScreen();                  // Start screen
+    screenInfo();                   // Generate screen info
+
+    if(mode == 1) writeEditor(mode);      // Run editor write mode
+    else if(mode == 0) {
+        readEditor(fileIn); // Run editor read mode
+        overwriteFile(fileDir);
+        writeEditor(mode); // Run editor write mode
     }
 }

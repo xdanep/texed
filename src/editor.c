@@ -3,210 +3,384 @@
 //
 #include <unistd.h>
 #include <stdlib.h>
-#include <errno.h>
-#include <stdio.h>
+#include <ncurses.h>
 #include <string.h>
-#include "files.h"
-#include "terminal.h"
-#include "editor.h"
+#include "includes/editor.h"
+#include "includes/screen.h"
+#include "includes/file.h"
+#include "includes/text.h"
 
-enum editorKey {
-    ARROW_LEFT = 1000,
-    ARROW_RIGHT,
-    ARROW_UP,
-    ARROW_DOWN,
-    DEL_KEY,
-    HOME_KEY,
-    END_KEY,
-    PAGE_UP,
-    PAGE_DOWN
-};
+EditConfig E;                           // Window size
 
-/*** Append buffer ***/
-struct abuf {
-    char *b;
-    int len;
-};
+void writeEditor(unsigned int mode) {
+    int c;                              // Character and iterator
 
-#define ABUF_INIT {NULL, 0}
-#define TEXED_VERSION "0.0.1"
+    initEditor(mode);                   // Initialize editor
+    saveFile();                         // Save in temp file
 
-void abAppend(struct abuf *ab, const char *s, int len) {
-    char *new = realloc(ab->b, ab->len + len);
-    if (new == NULL) return;
-    memcpy(&new[ab->len], s, len);
-    ab->b = new;
-    ab->len += len;
+    do {
+        c = getch();                    // get character
+        inputKeyProcess(c);             // process character
+    } while(1);                         // exit if the character is ctrl + x
 }
 
-void abFree(struct abuf *ab) {
-    free(ab->b);
+// Taken from https://github.com/snaptoken/kilo-src
+void readEditor(FILE *tfile) {
+    char *strings = NULL;                // String pointer
+    size_t linecap = 0;                  // Length
+    ssize_t linelen;                     // Line length
+
+    while ((linelen = getline(&strings, &linecap, tfile)) != -1) {
+        while (linelen > 0 && (strings[linelen - 1] == '\n' ||
+                                strings[linelen - 1] == '\r')) {
+            linelen--;                  // Remove new line
+        }
+        editorAppendRow(strings, linelen); // Append row
+    }
+    free(strings);                           // Free memory
+    fclose(tfile);                        // Close file
 }
 
-/*** Output ***/
-void editorDrawRows(struct abuf *ab) {
-    int y;
-    for (y = 0; y < E.screenrows; y++) {
-        if(y==E.screenrows / 3) {
-            char welcome[80];
+// Print file content on screen
+void editorPrint() {
+    wattron(texed, COLOR_PAIR(2));                  // apply color's configuration
+    mvwprintw(texed, 0, E.cols/2 - strlen(title)/2, "%s", title);
+    mvwprintw(texed, E.rows - 1, 0, "^X Exit  ^S Save");
+    wattron(texed, COLOR_PAIR(1));                 // apply color's configuration
+    wmove(texed, 1, 0);                            // Move cursor to the first position
 
-            int welcomelen = snprintf(welcome, sizeof(welcome),
-                                      "TexEd editor -- version %s", TEXED_VERSION);
-            if(welcomelen > E.screencols) welcomelen = E.screencols;
-
-            int padding = (E.screencols - welcomelen) / 2;
-            if (padding) {
-                abAppend(ab, "~", 1);
-                padding--;
-            }
-            while (padding--) abAppend(ab, " ", 1);
-
-            abAppend(ab, welcome, welcomelen);
-        } else {
-            abAppend(ab, "~", 1); // Print tilde
-        }
-
-        abAppend(ab, "\x1b[K", 3); // Clear line
-
-        if (y < E.screenrows - 1) {
-            abAppend(ab, "\r\n", 2); // Print newline
-        }
+    for (E.y = 0; E.y < E.nRows; E.y++) {
+        /*for(E.x = 0; E.x < E.wRows[E.y].length; E.x++) {
+             waddch(texed, E.wRows[E.y].wText[E.x]);
+        }*/
+        wprintw(texed, E.wRows[E.y].wText);
+        if (E.wRows[E.y].wText[E.wRows[E.y].length - 1] != '\n') waddch(texed, '\n');
+        else continue;
     }
 }
 
-void editorRefreshScreen() {
-    struct abuf ab = ABUF_INIT; // Initialize buffer
+void printChar() {
+    int tx, ty;
 
-    abAppend(&ab, "\x1b[?25l", 6); // Hide cursor
-    abAppend(&ab, "\x1b[H", 3);  // Reposition cursor
+    // Save cursor position
+    tx = E.x;
+    ty = E.y;
 
-    editorDrawRows(&ab); // Draw rows
-
-    char buf[32];
-    snprintf(buf, sizeof(buf), "\x1b[%d;%dH", E.cy + 1, E.cx + 1);
-    abAppend(&ab, buf, strlen(buf)); // Reposition cursor
-
-    abAppend(&ab, "\x1b[?25h", 6); // Show cursor
-
-    write(STDOUT_FILENO, ab.b, ab.len); // Write to terminal
-    abFree(&ab); // Free buffer
-}
-
-/*** Init ***/
-void initEditor() {
-    E.cx = 0;
-    E.cy = 0;
-
-    if (getWindowSize(&E.screenrows, &E.screencols) == -1) die("getWindowSize");
-}
-
-/*** Input ***/
-void editorMoveCursor(int key) {
-    switch (key) {
-        case ARROW_LEFT:
-            if (E.cx != 0) {
-                E.cx--;
-            }
-            break;
-        case ARROW_RIGHT:
-            if (E.cx != E.screencols - 1) {
-                E.cx++;
-            }
-            break;
-        case ARROW_UP:
-            if (E.cy != 0) {
-                E.cy--;
-            }
-            break;
-        case ARROW_DOWN:
-            if (E.cy != E.screenrows - 1) {
-                E.cy++;
-            }
-            break;
-    }
-}
-
-int editorReadKey() {
-    int nread;
-    char c;
-
-    // Read character from terminal
-    while ((nread = read(STDIN_FILENO, &c, 1)) != 1) {
-        if (nread == -1 && errno != EAGAIN) die("read");
-    }
-    if (c == '\x1b') {
-        char seq[3];
-        if (read(STDIN_FILENO, &seq[0], 1) != 1) return '\x1b';
-        if (read(STDIN_FILENO, &seq[1], 1) != 1) return '\x1b';
-        if (seq[0] == '[') {
-            if (seq[1] >= '0' && seq[1] <= '9') {
-                if (read(STDIN_FILENO, &seq[2], 1) != 1) return '\x1b';
-                if (seq[2] == '~') {
-                    switch (seq[1]) {
-                        case '1': return HOME_KEY;
-                        case '3': return DEL_KEY;
-                        case '4': return END_KEY;
-                        case '5': return PAGE_UP;
-                        case '6': return PAGE_DOWN;
-                        case '7': return HOME_KEY;
-                        case '8': return END_KEY;
-                    }
-                }
-            } else {
-                switch (seq[1]) {
-                    case 'A': return ARROW_UP;
-                    case 'B': return ARROW_DOWN;
-                    case 'C': return ARROW_RIGHT;
-                    case 'D': return ARROW_LEFT;
-                    case 'H': return HOME_KEY;
-                    case 'F': return END_KEY;
-                }
-            }
-        } else if (seq[0] == 'O') {
-            switch (seq[1]) {
-                case 'H': return HOME_KEY;
-                case 'F': return END_KEY;
-            }
+    if(E.wRows[E.y].length < E.cols){
+        wmove(texed, E.sy, 0);
+        wclrtoeol(texed);
+        wprintw(texed, E.wRows[E.y].wText);
+    } else if(E.wRows[E.y].length >= E.cols && E.x >= E.cols) {
+        //if(E.x == E.cols) E.sy--;
+        wmove(texed, E.sy, 0);
+        wclrtoeol(texed);
+        for(E.sx = E.cols; E.sx < E.wRows[E.y].length; E.sx++) {
+            waddch(texed, E.wRows[E.y].wText[E.sx]);
         }
-        return '\x1b';
+    } else if(E.wRows[E.y].length >= E.cols && E.x < E.cols) {
+        wmove(texed, E.sy, 0);
+        wclrtoeol(texed);
+        for(E.sx = 0; E.sx < E.cols; E.sx++) {
+            waddch(texed, E.wRows[E.y].wText[E.sx]);
+        }
+    }
+    // Restore cursor position
+    E.x = tx;
+    E.x++;
+    E.y = ty;
+    E.sy = E.y + 1;
+    if(E.x < E.cols) E.sx = E.x;
+    else if(E.x >= E.cols) E.sx = E.x - E.cols;
+    wmove(texed, E.sy, E.sx);
+}
+
+void saveFile() {
+    //Print in file
+    FILE *TEMP = fopen(tempFile, "w");
+    if (TEMP == NULL) {
+        fprintf(stderr, "Error: Could not create file at the specified address.\n");
+        exit(EXIT_FAILURE);
+    }
+    for(int i = 0; i < E.nRows; i++) {
+        fprintf(TEMP, "%s", E.wRows[i].wText);
+        if(E.wRows[i].wText[E.wRows[i].length - 1] != '\n') {
+            fprintf(TEMP, "\n");
+        }
+    }
+    fclose(TEMP);
+}
+
+void initEditor(unsigned int mode) {
+    // Print file content on screen
+    if (mode == 0) {
+        editorPrint();
+        wrefresh(texed);                  // Refresh window
+
+        E.y = 0;
+        E.x = 0;
+        E.sy = E.y + 1;
+        E.sx = E.x;
+        wmove(texed, E.sy, E.sx);           // Move cursor to the first position
+        wrefresh(texed);                  // Refresh window
+
+    } else if (mode == 1) editorAppendRow("", 0); // Insert first line
+
+    else {
+        fprintf(stderr, "Error: Invalid mode.\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void exitEditor() {
+    mvwprintw(texed, E.rows - 1, 0, "Do you want to save the file? (y/n): ");
+    wrefresh(texed);
+
+    int c = getch();
+    waddch(texed, c);
+    wrefresh(texed);
+
+    if (c == 'n' || c == 'N') {
+        // Remove TEMP
+        if (remove(fileDir) != 0) perror("Error deleting file");
+        // Rename TEMP to file
+        if (rename(tempFile, fileDir) != 0) perror("Error renaming file");
+
     } else {
-        return c;
+        //Print in file
+        for(int i = 0; i < E.nRows; i++) {
+            fprintf(fileIn, "%s", E.wRows[i].wText);
+            if(E.wRows[i].wText[E.wRows[i].length - 1] != '\n') {
+                fprintf(fileIn, "\n");
+            }
+        }
+        // Remove TEMP
+        if (remove(tempFile) != 0) perror("Error deleting file");
     }
+
+    free(E.wRows);                      // Free memory
+    wclear(texed);                        // Clear window
+    endwin();                               // End curses mode
+    fclose(fileIn);                  // Close file
+
+    free(fileDir);                      // Free memory
+    free(tempFile);                     // Free memory
+    exit(EXIT_SUCCESS);              // Exit
 }
 
-void editorProcessKeypress() {
-    int c = editorReadKey();
+void inputKeyProcess(int c) {
+    int  tx, ty; // Temporary x and y
 
-    // Check if character is a control character
-    switch (c) {
-        case CTRL_KEY('q'): // Quit
-            write(STDOUT_FILENO, "\x1b[2J", 4);  // Clear screen
-            write(STDOUT_FILENO, "\x1b[H", 3);   // Reposition cursor
-            fclose(fileIn);                         // Close file
-            exit(EXIT_SUCCESS);
-            break;
+    // If the character is backspace or delete
+    if (c == KEY_BACKSPACE || c == 127) {
+        // Verify if we are on the first position
+        if (E.x > 0) {
+            // Move the cursor to the left
+            E.x--;
+            E.sx--;
+            wmove(texed, E.sy, E.sx);
 
-        case HOME_KEY:
-            E.cx = 0;
-            break;
-        case END_KEY:
-            E.cx = E.screencols - 1;
-            break;
+            // Delete actual character on screen
+            wdelch(texed);
+            // Delete actual character on memory
+            memmove(&E.wRows[E.y].wText[E.x], &E.wRows[E.y].wText[E.x + 1], E.wRows[E.y].length - E.x);
+            E.wRows[E.y].wText = realloc(E.wRows[E.y].wText, E.wRows[E.y].length);
+            if(E.wRows[E.y].wText == NULL) exit(EXIT_FAILURE);
 
-        case PAGE_UP:
-        case PAGE_DOWN:
-            {
-            int times = E.screenrows;
-            while (times--)
-                editorMoveCursor(c == PAGE_UP ? ARROW_UP : ARROW_DOWN);
+            E.wRows[E.y].length--;
+            editorUpdateRow(&E.wRows[E.y]);
+        } else if (E.x == 0 && E.y > 0) {
+            // Move to the previous line
+            E.y--;
+            E.sy--;
+            E.x = E.wRows[E.y].length;
+
+            removeLine();
+            editorUpdateRow(&E.wRows[E.y]);
+
+            // Save cursor position
+            tx = E.x;
+            ty = E.y;
+            wmove(texed, E.sy, E.sx);
+
+            // Delete actual character
+            wclear(texed);
+
+            // Print content
+            editorPrint();
+
+            // Restore cursor position
+            E.x = tx;
+            E.y = ty;
+            E.sx = E.x;
+            E.sy = E.y + 1;
+            wmove(texed, E.sy, E.sx);
+        }
+        // by pressing enter the cursor moves to the next line
+    } else if (c == KEY_ENTER || c == 13 || c == 10) {
+        E.y++;
+        E.sy++;
+
+        if(E.y <= E.nRows && E.x != E.wRows[E.y - 1].length) {
+            // Save cursor position
+            ty = E.y;
+
+            // Insert new line
+            editorInsertRow(E.y, "", 0);
+            E.wRows[E.y].wText = realloc(E.wRows[E.y].wText, E.wRows[E.y - 1].length - E.x);
+            strncpy(E.wRows[E.y].wText, &E.wRows[E.y - 1].wText[E.x], E.wRows[E.y - 1].length - E.x);
+            E.wRows[E.y].length = E.wRows[E.y - 1].length - E.x;
+            E.wRows[E.y - 1].length = E.x;
+            E.wRows[E.y - 1].wText[E.x] = '\0';
+            E.wRows[E.y].wText[E.wRows[E.y].length] = '\0';
+            editorUpdateRow(&E.wRows[E.y]);
+            editorUpdateRow(&E.wRows[E.y - 1]);
+
+            wclear(texed);
+            editorPrint();
+
+            // Restore cursor position
+            E.y = ty;
+            E.sy = E.y + 1;
+        } else if(E.y <= E.nRows && E.x == E.wRows[E.y - 1].length) {
+            // Save cursor position
+            ty = E.y;
+
+            // Insert new line
+            editorInsertRow(E.y, "", 0);
+            editorUpdateRow(&E.wRows[E.y]);
+
+            wclear(texed);
+            editorPrint();
+
+            // Restore cursor position
+            E.y = ty;
+            E.sy = E.y + 1;
+        } else {
+            // Append new line
+            editorAppendRow("", 0);
+            editorUpdateRow(&E.wRows[E.y]);
+
+            wclear(texed);
+            editorPrint();
+
+            E.y = E.nRows - 1;
+            E.sy = E.y + 1;
+        }
+        E.x = 0;
+        E.sx = E.x;
+        wmove(texed, E.sy, E.sx);
+
+        // If the character is left
+    } else if (c == KEY_LEFT) {
+        // Verify if we are on the first position and jump to the previous line
+        if(E.x == 0 && E.y > 0) {
+            E.y--;
+            E.sy--;
+            E.x = E.wRows[E.y].length;
+            if(E.wRows[E.y].length < E.cols) {
+                E.sx = E.x;
+            } else if(E.wRows[E.y].length >= E.cols) {
+                wmove(texed, E.sy, 0);
+                wclrtoeol(texed);
+                for(E.sx = E.cols; E.sx < E.wRows[E.y].length; E.sx++) {
+                    waddch(texed, E.wRows[E.y].wText[E.sx]);
+                }
+                E.sx = E.x - E.cols;
             }
-            break;
+            wmove(texed, E.sy, E.sx);
+            // Verify if we are not on the first position
+        } else if (E.x > 0 && E.x == E.cols) {
+            E.x--;
+            E.sx--;
+            wmove(texed, E.sy, 0);
+            wclrtoeol(texed);
+            for(E.sx = 0; E.sx < E.cols; E.sx++) {
+                waddch(texed, E.wRows[E.y].wText[E.sx]);
+            }
+            E.sx = E.x;
+            wmove(texed, E.sy, E.sx);
+        } else if (E.x > 0 &&  E.x != E.cols) {
+            E.x--;
+            E.sx--;
+            wmove(texed, E.sy, E.sx);
+        } 
 
-        case ARROW_UP:
-        case ARROW_DOWN:
-        case ARROW_LEFT:
-        case ARROW_RIGHT:
-            editorMoveCursor(c);
-            break;
+        // If the character is right
+    } else if (c == KEY_RIGHT) {
+        // Verify if we are not on the last position
+        if(E.x < E.wRows[E.y].length && E.x != E.cols) {
+            E.x++;
+            E.sx++;
+            wmove(texed, E.sy, E.sx);
+            // Verify if we are on the last position and jump to the next line
+        } else if(E.x < E.wRows[E.y].length && E.x == E.cols) {
+            E.x++;
+            E.sx++;
+            wmove(texed, E.sy, 0);
+            wclrtoeol(texed);
+            for(E.sx = E.cols; E.sx < E.wRows[E.y].length; E.sx++) {
+                waddch(texed, E.wRows[E.y].wText[E.sx]);
+            }
+            E.sx = E.x - E.cols;
+            wmove(texed, E.sy, E.sx);
+        } else if (E.x == E.wRows[E.y].length && E.y < E.nRows - 1) {
+            E.y++;
+            E.sy++;
+            E.x = 0;
+            E.sx = E.x;
+            wmove(texed, E.sy, E.sx);
+        }
+        // if the character is down
+    } else if (c == KEY_DOWN) {
+        // Verify if we are not on the last position
+        if(E.y < E.nRows - 1) {
+            E.y++;
+            E.sy++;
+            // Move to the end of the line
+            if(E.x > E.wRows[E.y].length) {
+                E.x = E.wRows[E.y].length;
+            }
+            E.sx = E.x;
+            wmove(texed, E.sy, E.sx);
+        }
+        // if the character is up
+    } else if (c == KEY_UP) {
+        if(E.y > 0) {
+            E.y--;
+            E.sy--;
+            if(E.x > E.wRows[E.y].length) {
+                E.x = E.wRows[E.y].length;
+            }
+            E.sx = E.x;
+            wmove(texed, E.sy, E.sx);
+        }
+    } else if(c == KEY_END) {
+        // End of page
+        E.y = E.nRows - 1;
+        E.x = E.wRows[E.y].length;
+        E.sy = E.y + 1;
+        E.sx = E.x;
+        wmove(texed, E.sy, E.sx);
+    } else if (c == KEY_HOME) {
+        // Start of page
+        E.y = 0;
+        E.x = 0;
+        E.sy = E.y + 1;
+        E.sx = E.x;
+        wmove(texed, E.sy, E.sx);
+    } else if (c == CTRL_KEY('s')) {
+        // Save
+        saveFile();
+    } else if (c == CTRL_KEY('x')) {
+        // Exit
+        exitEditor();
+    } else {
+        // If the character is a letter print and add the character
+        // Insert and print changes
+        editorInsertChar(c);
+        editorUpdateRow(&E.wRows[E.y]);
+        printChar();
     }
+    wrefresh(texed);          // refresh the window
+    getyx(texed, E.sy, E.sx);   // get cursor position
 }
