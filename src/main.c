@@ -22,10 +22,10 @@ int main(int argc, char *argv[]) {
     startScreen();                  // Start screen
     screenInfo();                   // Generate screen info
 
-    if(mode == 1) writeEditor(mode);      // Run editor write mode
+    if(mode == 1) writeEditor(mode);// Run editor write mode
     else if(mode == 0) {
-        readEditor(fileIn); // Run editor read mode
+        readEditor(fileIn);         // Run editor read mode
         overwriteFile(fileDir);
-        writeEditor(mode); // Run editor write mode
+        writeEditor(mode);          // Run editor write mode
     }
 }
