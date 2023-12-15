@@ -11,4 +11,4 @@
 // Function prototypes
 void checkArgs(int argc, char **argv);
 
-#endif //TEXED_CLI_H
+#endif // TEXED_CLI_H

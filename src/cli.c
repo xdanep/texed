@@ -6,28 +6,39 @@
 #include <string.h>
 #include "includes/cli.h"
 
-void checkArgs(int argc, char **argv) {
+void checkArgs(int argc, char **argv)
+{
 
-    if (argc == 1) {
+    if (argc == 1)
+    {
         // No arguments
         fprintf(stderr, "Use: %s --help\n", argv[0]);
         exit(EXIT_FAILURE);
-    } else if (argc == 2) {
+    }
+    else if (argc == 2)
+    {
         // One argument
-        if (strcmp(argv[1], "--version") == 0) {
+        if (strcmp(argv[1], "--version") == 0)
+        {
             // Print version number
             printf("Texed version %s\nDeveloped by Xdanep\n", VERSION);
             exit(EXIT_SUCCESS);
-        } else if (strcmp(argv[1], "--help") == 0) {
+        }
+        else if (strcmp(argv[1], "--help") == 0)
+        {
             // Print help
             printf("Usage: %s <filename>\n", argv[0]);
             printf("Options:\n");
             printf("--version\t\t\tShow version number\n");
             exit(EXIT_SUCCESS);
-        } else {
+        }
+        else
+        {
             return;
         }
-    } else if(argc > 2) {
+    }
+    else if (argc > 2)
+    {
         // Too many arguments
         fprintf(stderr, "Error: Too many arguments.\n");
         exit(EXIT_FAILURE);

@@ -13,4 +13,4 @@ extern char *title;
 // Function prototypes
 void startScreen();
 void screenInfo();
-#endif //TEXED_SCREEN_H
+#endif // TEXED_SCREEN_H

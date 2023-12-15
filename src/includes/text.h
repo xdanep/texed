@@ -13,4 +13,4 @@ void editorUpdateRow(writtenRows *row);
 void editorRowInsertChar(writtenRows *row, int at, int c);
 void editorInsertChar(int c);
 void removeLine();
-#endif //TEXED_TEXT_H
+#endif // TEXED_TEXT_H
