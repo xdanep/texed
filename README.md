@@ -10,7 +10,7 @@ You can use Texed as a foundation to develop your own editor, or you can also co
 - Review source code changes
 
 # Screenshots
-<br> <img src="https://github.com/xdanep/vector/blob/master/screenshots/texed.png"/> <br>
+<br> <img src="https://github.com/xdanep/texed/blob/master/screenshots/texed.png"/> <br>
 
 ### Available features
 - Writing, reading and editing text
