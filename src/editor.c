@@ -57,6 +57,7 @@ void editorPrint()
 
     for (E.y = 0; E.y < E.nRows; E.y++)
     {
+        // Print line larger than the window
         if (E.wRows[E.y].length >= E.cols)
         {
             for (E.x = 0; E.x < E.cols; E.x++)
@@ -64,12 +65,14 @@ void editorPrint()
                 waddch(texed, E.wRows[E.y].wText[E.x]);
             }
         }
+        // Print line smaller than the window
         else
         {
             for (E.x = 0; E.x < E.wRows[E.y].length; E.x++)
             {
                 waddch(texed, E.wRows[E.y].wText[E.x]);
             }
+            // Add new line
             if (E.wRows[E.y].wText[E.wRows[E.y].length - 1] != '\n')
                 waddch(texed, '\n');
             else
@@ -149,6 +152,7 @@ void initEditor(unsigned int mode)
         editorPrint();   // Print content
         wrefresh(texed); // Refresh window
 
+        // Move cursor to the first position
         E.y = 0;
         E.x = 0;
         E.sy = E.y + 1;
@@ -269,6 +273,8 @@ void inputKeyProcess(int c)
             E.x = tx;
             E.y = ty;
             E.sy = E.y + 1;
+
+            // Line is larger than the window
             if(E.x >= E.cols)
                 {
                     wmove(texed, E.sy, 0); // Move cursor to the first position
@@ -354,10 +360,12 @@ void inputKeyProcess(int c)
         E.x--;
         E.sx--;
 
+        // If the cursor is on the first position
         if (E.x < 0 && E.y > 0)
         {
             E.y--;
             E.sy--;
+            // Reprint current line
             if (E.wRows[E.y].length >= E.cols)
             {
                 wmove(texed, E.sy, 0); // Move cursor to the first position
@@ -372,6 +380,7 @@ void inputKeyProcess(int c)
             E.x = E.wRows[E.y].length;
             E.sx = E.x;
         }
+        // Move to the previows screen
         if (E.x == E.cols - 1)
         {
             wmove(texed, E.sy, 0); // Move cursor to the first position
@@ -388,11 +397,14 @@ void inputKeyProcess(int c)
     }
     else if (c == KEY_RIGHT)
     {
+        // Move cursor to the right
         E.x++;
         E.sx++;
 
+        // If the cursor is on the last position
         if (E.x > E.wRows[E.y].length && E.y < E.nRows - 1)
         {
+            // Reprint current line
             if (E.wRows[E.y].length >= E.cols)
             {
                 wmove(texed, E.sy, 0); // Move cursor to the first position
@@ -409,11 +421,15 @@ void inputKeyProcess(int c)
             E.x = 0;
             E.sx = E.x;
         }
+
+        // Move to the next line
         else if (E.x > E.wRows[E.y].length && E.y == E.nRows - 1)
         {
             E.x = E.wRows[E.y].length;
             E.sx = E.x;
         }
+
+        // Move to the next screen
         if (E.sx == E.cols)
         {
             wmove(texed, E.sy, 0); // Move cursor to the first position
@@ -430,6 +446,7 @@ void inputKeyProcess(int c)
     }
     else if (c == KEY_DOWN)
     {
+        // Reprint current line
         if (E.x >= E.cols)
         {
             wmove(texed, E.sy, 0); // Move cursor to the first position
@@ -441,6 +458,7 @@ void inputKeyProcess(int c)
                 waddch(texed, E.wRows[E.y].wText[E.sx]);
             }
         }
+        // Move cursor to the next line
         E.y++;
         E.sy++;
         if (E.y >= E.nRows)
@@ -448,11 +466,14 @@ void inputKeyProcess(int c)
             E.y = E.nRows - 1;
             E.sy = E.y + 1;
         }
+        // If previows line is larger than current line
         if (E.wRows[E.y].length < E.x)
         {
             E.x = E.wRows[E.y].length;
             E.sx = E.x;
         }
+
+        // Line is larger than the window
         if (E.x >= E.cols)
         {
             wmove(texed, E.sy, 0); // Move cursor to the first position
@@ -469,6 +490,7 @@ void inputKeyProcess(int c)
     }
     else if (c == KEY_UP)
     {
+        // Reprint current line
         if (E.x >= E.cols)
         {
             wmove(texed, E.sy, 0); // Move cursor to the first position
@@ -480,18 +502,25 @@ void inputKeyProcess(int c)
                 waddch(texed, E.wRows[E.y].wText[E.sx]);
             }
         }
+        // Move cursor to the previous line
         E.y--;
         E.sy--;
+
+        // If the cursor is on the first position
         if (E.y < 0)
         {
             E.y = 0;
             E.sy = E.y + 1;
         }
+
+        // If previows line is larger than current line
         if (E.wRows[E.y].length < E.x)
         {
             E.x = E.wRows[E.y].length;
             E.sx = E.x;
         }
+
+        // Line is larger than the window
         if (E.x >= E.cols)
         {
             wmove(texed, E.sy, 0); // Move cursor to the first position
@@ -509,6 +538,7 @@ void inputKeyProcess(int c)
     else if (c == KEY_END)
     {
         // End of page
+        // Reprint current line
         if (E.wRows[E.y].length >= E.cols)
         {
             wmove(texed, E.sy, 0); // Move cursor to the first position
@@ -520,8 +550,10 @@ void inputKeyProcess(int c)
                 waddch(texed, E.wRows[E.y].wText[E.sx]);
             }
         }
+        // Move cursor to the end of the page
         E.y = E.nRows - 1;
         E.sy = E.y + 1;
+        // Reprint line
         if (E.wRows[E.y].length >= E.cols)
         {
             wmove(texed, E.sy, 0); // Move cursor to the first position
@@ -540,6 +572,7 @@ void inputKeyProcess(int c)
     else if (c == KEY_HOME)
     {
         // Start of page
+        // Reprint line
         if (E.wRows[E.y].length >= E.cols)
         {
             wmove(texed, E.sy, 0); // Move cursor to the first position
@@ -551,6 +584,7 @@ void inputKeyProcess(int c)
                 waddch(texed, E.wRows[E.y].wText[E.sx]);
             }
         }
+        // Move cursor to the start of the page
         E.y = 0;
         E.sy = E.y + 1;
         E.x = 0;
