@@ -57,25 +57,29 @@ void editorPrint()
 
     for (E.y = 0; E.y < E.nRows; E.y++)
     {
-        /*for(E.x = 0; E.x < E.wRows[E.y].length; E.x++) {
-             waddch(texed, E.wRows[E.y].wText[E.x]);
-        }*/
-        wprintw(texed, E.wRows[E.y].wText);
-        if (E.wRows[E.y].wText[E.wRows[E.y].length - 1] != '\n')
-            waddch(texed, '\n');
+        if (E.wRows[E.y].length >= E.cols)
+        {
+            for (E.x = 0; E.x < E.cols; E.x++)
+            {
+                waddch(texed, E.wRows[E.y].wText[E.x]);
+            }
+        }
         else
-            continue;
+        {
+            for (E.x = 0; E.x < E.wRows[E.y].length; E.x++)
+            {
+                waddch(texed, E.wRows[E.y].wText[E.x]);
+            }
+            if (E.wRows[E.y].wText[E.wRows[E.y].length - 1] != '\n')
+                waddch(texed, '\n');
+            else
+                continue;
+        }
     }
 }
 
 void printChar()
 {
-    int tx, ty;
-
-    // Save cursor position
-    tx = E.x;
-    ty = E.y;
-
     // Print changes
     if (E.wRows[E.y].length < E.cols)
     {
@@ -108,9 +112,7 @@ void printChar()
         }
     }
     // Restore cursor position
-    E.x = tx;
     E.x++;
-    E.y = ty;
     E.sy = E.y + 1;
     if (E.x < E.cols)
         E.sx = E.x;
@@ -219,6 +221,18 @@ void inputKeyProcess(int c)
             // Move the cursor to the left
             E.x--;
             E.sx--;
+            if (E.x == E.cols - 1)
+            {
+                wmove(texed, E.sy, 0); // Move cursor to the first position
+                wclrtoeol(texed);      // Clear line
+
+                // Print line
+                for (E.sx = 0; E.sx < E.cols; E.sx++)
+                {
+                    waddch(texed, E.wRows[E.y].wText[E.sx]);
+                }
+                E.sx = E.x;
+            }
             wmove(texed, E.sy, E.sx);
 
             wdelch(texed); // Delete actual character on screen
@@ -254,8 +268,19 @@ void inputKeyProcess(int c)
             // Restore cursor position
             E.x = tx;
             E.y = ty;
-            E.sx = E.x;
             E.sy = E.y + 1;
+            if(E.x >= E.cols)
+                {
+                    wmove(texed, E.sy, 0); // Move cursor to the first position
+                    wclrtoeol(texed);      // Clear line
+                    for(E.sx = E.cols; E.sx < E.wRows[E.y].length; E.sx++)
+                    {
+                        waddch(texed, E.wRows[E.y].wText[E.sx]);
+                    }
+                    E.sx = E.x - E.cols;
+                }
+            else
+                E.sx = E.x;
             wmove(texed, E.sy, E.sx);
         }
     }
@@ -325,19 +350,15 @@ void inputKeyProcess(int c)
     }
     else if (c == KEY_LEFT)
     {
-        // Verify if we are on the first position and jump to the previous line
-        if (E.x == 0 && E.y > 0)
+        // Move cursor to the left
+        E.x--;
+        E.sx--;
+
+        if (E.x < 0 && E.y > 0)
         {
-            // Move cursor
             E.y--;
             E.sy--;
-            E.x = E.wRows[E.y].length;
-
-            if (E.wRows[E.y].length < E.cols)
-            {
-                E.sx = E.x;
-            }
-            else if (E.wRows[E.y].length >= E.cols)
+            if (E.wRows[E.y].length >= E.cols)
             {
                 wmove(texed, E.sy, 0); // Move cursor to the first position
                 wclrtoeol(texed);      // Clear line
@@ -347,122 +368,192 @@ void inputKeyProcess(int c)
                 {
                     waddch(texed, E.wRows[E.y].wText[E.sx]);
                 }
-                E.sx = E.x - E.cols;
             }
-            wmove(texed, E.sy, E.sx);
-            // Verify if we are not on the first position
+            E.x = E.wRows[E.y].length;
+            E.sx = E.x;
         }
-        else if (E.x > 0 && E.x == E.cols)
+        if (E.x == E.cols - 1)
         {
-            // Move cursor
-            E.x--;
-            E.sx--;
-            wmove(texed, E.sy, 0);
+            wmove(texed, E.sy, 0); // Move cursor to the first position
+            wclrtoeol(texed);      // Clear line
 
-            wclrtoeol(texed); // Clear line
+            // Print line
             for (E.sx = 0; E.sx < E.cols; E.sx++)
             {
-                waddch(texed, E.wRows[E.y].wText[E.sx]); // Print line
+                waddch(texed, E.wRows[E.y].wText[E.sx]);
             }
             E.sx = E.x;
-            wmove(texed, E.sy, E.sx);
         }
-        else if (E.x > 0 && E.x != E.cols)
-        {
-            // Move cursor
-            E.x--;
-            E.sx--;
-            wmove(texed, E.sy, E.sx);
-        }
-
-        // If the character is right
+        wmove(texed, E.sy, E.sx);
     }
     else if (c == KEY_RIGHT)
     {
-        // Move to the right if we are not on the last position
-        if (E.x < E.wRows[E.y].length && E.x != E.cols)
-        {
-            E.x++;
-            E.sx++;
-            wmove(texed, E.sy, E.sx);
+        E.x++;
+        E.sx++;
 
-            // Move to the right if we are on the last position of the screen
-        }
-        else if (E.x < E.wRows[E.y].length && E.x == E.cols)
+        if (E.x > E.wRows[E.y].length && E.y < E.nRows - 1)
         {
-            E.x++;
-            E.sx++;
-            wmove(texed, E.sy, 0);
-
-            wclrtoeol(texed); // Clear line
-            for (E.sx = E.cols; E.sx < E.wRows[E.y].length; E.sx++)
+            if (E.wRows[E.y].length >= E.cols)
             {
-                waddch(texed, E.wRows[E.y].wText[E.sx]); // Print line
-            }
-            E.sx = E.x - E.cols;
-            wmove(texed, E.sy, E.sx);
+                wmove(texed, E.sy, 0); // Move cursor to the first position
+                wclrtoeol(texed);      // Clear line
 
-            // Jump to the next line if we are on the last position of the line
-        }
-        else if (E.x == E.wRows[E.y].length && E.y < E.nRows - 1)
-        {
+                // Print line
+                for (E.sx = 0; E.sx < E.cols; E.sx++)
+                {
+                    waddch(texed, E.wRows[E.y].wText[E.sx]);
+                }
+            }
             E.y++;
             E.sy++;
             E.x = 0;
             E.sx = E.x;
-            wmove(texed, E.sy, E.sx);
         }
-        // if the character is down
+        else if (E.x > E.wRows[E.y].length && E.y == E.nRows - 1)
+        {
+            E.x = E.wRows[E.y].length;
+            E.sx = E.x;
+        }
+        if (E.sx == E.cols)
+        {
+            wmove(texed, E.sy, 0); // Move cursor to the first position
+            wclrtoeol(texed);      // Clear line
+
+            // Print line
+            for (E.sx = E.cols; E.sx < E.wRows[E.y].length; E.sx++)
+            {
+                waddch(texed, E.wRows[E.y].wText[E.sx]);
+            }
+            E.sx = E.x - E.cols;
+        }
+        wmove(texed, E.sy, E.sx);
     }
     else if (c == KEY_DOWN)
     {
-        // Verify if we are not on the last position
-        if (E.y < E.nRows - 1)
+        if (E.x >= E.cols)
         {
-            E.y++;
-            E.sy++;
+            wmove(texed, E.sy, 0); // Move cursor to the first position
+            wclrtoeol(texed);      // Clear line
 
-            // Move to the end of the line
-            if (E.x > E.wRows[E.y].length)
+            // Print line
+            for (E.sx = 0; E.sx < E.cols; E.sx++)
             {
-                E.x = E.wRows[E.y].length;
+                waddch(texed, E.wRows[E.y].wText[E.sx]);
             }
-            E.sx = E.x;
-            wmove(texed, E.sy, E.sx);
         }
-        // if the character is up
+        E.y++;
+        E.sy++;
+        if (E.y >= E.nRows)
+        {
+            E.y = E.nRows - 1;
+            E.sy = E.y + 1;
+        }
+        if (E.wRows[E.y].length < E.x)
+        {
+            E.x = E.wRows[E.y].length;
+            E.sx = E.x;
+        }
+        if (E.x >= E.cols)
+        {
+            wmove(texed, E.sy, 0); // Move cursor to the first position
+            wclrtoeol(texed);      // Clear line
+
+            // Print line
+            for (E.sx = E.cols; E.sx < E.wRows[E.y].length; E.sx++)
+            {
+                waddch(texed, E.wRows[E.y].wText[E.sx]);
+            }
+            E.sx = E.x - E.cols;
+        }
+        wmove(texed, E.sy, E.sx);
     }
     else if (c == KEY_UP)
     {
-        if (E.y > 0)
+        if (E.x >= E.cols)
         {
-            E.y--;
-            E.sy--;
+            wmove(texed, E.sy, 0); // Move cursor to the first position
+            wclrtoeol(texed);      // Clear line
 
-            // Move to the end of the line
-            if (E.x > E.wRows[E.y].length)
+            // Print line
+            for (E.sx = 0; E.sx < E.cols; E.sx++)
             {
-                E.x = E.wRows[E.y].length;
+                waddch(texed, E.wRows[E.y].wText[E.sx]);
             }
-            E.sx = E.x;
-            wmove(texed, E.sy, E.sx);
         }
+        E.y--;
+        E.sy--;
+        if (E.y < 0)
+        {
+            E.y = 0;
+            E.sy = E.y + 1;
+        }
+        if (E.wRows[E.y].length < E.x)
+        {
+            E.x = E.wRows[E.y].length;
+            E.sx = E.x;
+        }
+        if (E.x >= E.cols)
+        {
+            wmove(texed, E.sy, 0); // Move cursor to the first position
+            wclrtoeol(texed);      // Clear line
+
+            // Print line
+            for (E.sx = E.cols; E.sx < E.wRows[E.y].length; E.sx++)
+            {
+                waddch(texed, E.wRows[E.y].wText[E.sx]);
+            }
+            E.sx = E.x - E.cols;
+        }
+        wmove(texed, E.sy, E.sx);
     }
     else if (c == KEY_END)
     {
         // End of page
+        if (E.wRows[E.y].length >= E.cols)
+        {
+            wmove(texed, E.sy, 0); // Move cursor to the first position
+            wclrtoeol(texed);      // Clear line
+
+            // Print line
+            for (E.sx = 0; E.sx < E.cols; E.sx++)
+            {
+                waddch(texed, E.wRows[E.y].wText[E.sx]);
+            }
+        }
         E.y = E.nRows - 1;
-        E.x = E.wRows[E.y].length;
         E.sy = E.y + 1;
+        if (E.wRows[E.y].length >= E.cols)
+        {
+            wmove(texed, E.sy, 0); // Move cursor to the first position
+            wclrtoeol(texed);      // Clear line
+
+            // Print line
+            for (E.sx = E.cols; E.sx < E.wRows[E.y].length; E.sx++)
+            {
+                waddch(texed, E.wRows[E.y].wText[E.sx]);
+            }
+        }
+        E.x = E.wRows[E.y].length;
         E.sx = E.x;
         wmove(texed, E.sy, E.sx);
     }
     else if (c == KEY_HOME)
     {
         // Start of page
+        if (E.wRows[E.y].length >= E.cols)
+        {
+            wmove(texed, E.sy, 0); // Move cursor to the first position
+            wclrtoeol(texed);      // Clear line
+
+            // Print line
+            for (E.sx = 0; E.sx < E.cols; E.sx++)
+            {
+                waddch(texed, E.wRows[E.y].wText[E.sx]);
+            }
+        }
         E.y = 0;
-        E.x = 0;
         E.sy = E.y + 1;
+        E.x = 0;
         E.sx = E.x;
         wmove(texed, E.sy, E.sx);
     }
