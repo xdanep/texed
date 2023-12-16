@@ -16,9 +16,9 @@ You can use Texed as a foundation to develop your own editor, or you can also co
 - Writing, reading and editing text
 - Status bar (Taskit "Version" "File")
 - Shortcuts in the bottom
+- Vertical and horizontal scrolling
 
 ### Features to be added
-- Vertical and horizontal scrolling
 - Package
 
 # Dependencies
