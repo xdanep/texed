@@ -653,6 +653,11 @@ void inputKeyProcess(int c)
         }
         // Move cursor to the end of the page
         E.y = E.nRows - 1;
+        E.fy = E.nRows - E.rows + 2;
+        wclear(texed); // Clear window
+        editorPrint(); // Print content
+        E.y = E.nRows - 1;
+        E.fy = E.nRows - E.rows + 2;
         E.sy = E.y - E.fy + 1;
         // Reprint line
         if (E.wRows[E.y].length >= E.cols)
@@ -687,6 +692,11 @@ void inputKeyProcess(int c)
         }
         // Move cursor to the start of the page
         E.y = 0;
+        E.fy = 0;
+        wclear(texed); // Clear window
+        editorPrint(); // Print content
+        E.y = 0;
+        E.fy = 0;
         E.sy = E.y - E.fy + 1;
         E.x = 0;
         E.sx = E.x;
