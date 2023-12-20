@@ -146,7 +146,7 @@ void printChar()
     }
     // Restore cursor position
     E.x++;
-    E.sy = E.y + 1;
+    E.sy = E.y - E.fy + 1;
     if (E.x < E.cols)
         E.sx = E.x;
     else if (E.x >= E.cols)
@@ -185,7 +185,7 @@ void initEditor(unsigned int mode)
         // Move cursor to the first position
         E.y = 0;
         E.x = 0;
-        E.sy = E.y + 1;
+        E.sy = E.y - E.fy + 1;
         E.fy = 0;
         E.sx = E.x;
         wmove(texed, E.sy, E.sx); // Move cursor
@@ -303,7 +303,7 @@ void inputKeyProcess(int c)
             // Restore cursor position
             E.x = tx;
             E.y = ty;
-            E.sy = E.y + 1;
+            E.sy = E.y - E.fy + 1;
 
             // Line is larger than the window
             if (E.x >= E.cols)
@@ -348,7 +348,7 @@ void inputKeyProcess(int c)
 
             // Restore cursor position
             E.y = ty;
-            E.sy = E.y + 1;
+            E.sy = E.y - E.fy + 1;
         }
         else if (E.y <= E.nRows && E.x == E.wRows[E.y - 1].length)
         {
@@ -364,7 +364,7 @@ void inputKeyProcess(int c)
 
             // Restore cursor position
             E.y = ty;
-            E.sy = E.y + 1;
+            E.sy = E.y - E.fy + 1;
         }
         else
         {
@@ -377,7 +377,7 @@ void inputKeyProcess(int c)
 
             // Move cursor
             E.y = E.nRows - 1;
-            E.sy = E.y + 1;
+            E.sy = E.y - E.fy + 1;
         }
         E.x = 0;
         E.sx = E.x;
@@ -396,6 +396,18 @@ void inputKeyProcess(int c)
         {
             E.y--;
             E.sy--;
+            // Move screen to the previous line
+            if(E.sy <= 0 && E.y >= 0)
+            {
+                ty = E.y;
+                tx = E.x;
+                E.fy--;
+                wclear(texed); // Clear window
+                editorPrint(); // Print content
+                E.y = ty;
+                E.x = tx;
+                E.sy = 1;
+            }
             // Reprint current line
             if (E.wRows[E.y].length >= E.cols)
             {
@@ -449,6 +461,18 @@ void inputKeyProcess(int c)
             }
             E.y++;
             E.sy++;
+            // Move screen to the next line
+            if(E.sy >= E.rows - 1 && E.y < E.nRows)
+            {
+                ty = E.y;
+                tx = E.x;
+                E.fy++;
+                wclear(texed); // Clear window
+                editorPrint(); // Print content
+                E.y = ty;
+                E.x = tx;
+                E.sy = E.rows - 2;
+            }
             E.x = 0;
             E.sx = E.x;
         }
@@ -508,7 +532,7 @@ void inputKeyProcess(int c)
         if (E.y >= E.nRows)
         {
             E.y = E.nRows - 1;
-            E.sy = E.y + 1;
+            E.sy = E.y - E.fy + 1;
         }
         // If previows line is larger than current line
         if (E.wRows[E.y].length < E.x)
@@ -549,7 +573,7 @@ void inputKeyProcess(int c)
         // Move cursor to the previous line
         E.y--;
         E.sy--;
-        // Move screen to the next line
+        // Move screen to the previous line
         if(E.sy <= 0 && E.y >= 0)
         {
             ty = E.y;
@@ -566,7 +590,7 @@ void inputKeyProcess(int c)
         if (E.y < 0)
         {
             E.y = 0;
-            E.sy = E.y + 1;
+            E.sy = E.y - E.fy + 1;
         }
 
         // If previows line is larger than current line
@@ -608,7 +632,7 @@ void inputKeyProcess(int c)
         }
         // Move cursor to the end of the page
         E.y = E.nRows - 1;
-        E.sy = E.y + 1;
+        E.sy = E.y - E.fy + 1;
         // Reprint line
         if (E.wRows[E.y].length >= E.cols)
         {
@@ -642,7 +666,7 @@ void inputKeyProcess(int c)
         }
         // Move cursor to the start of the page
         E.y = 0;
-        E.sy = E.y + 1;
+        E.sy = E.y - E.fy + 1;
         E.x = 0;
         E.sx = E.x;
         wmove(texed, E.sy, E.sx);
@@ -664,6 +688,7 @@ void inputKeyProcess(int c)
         editorInsertChar(c);
         editorUpdateRow(&E.wRows[E.y]);
         printChar();
+        E.sy = E.y - E.fy + 1;
     }
     wrefresh(texed);          // refresh the window
     getyx(texed, E.sy, E.sx); // get cursor position
