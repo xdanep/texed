@@ -296,6 +296,8 @@ void inputKeyProcess(int c)
             tx = E.x;
             ty = E.y;
             wmove(texed, E.sy, E.sx);
+            
+            if(E.fy > 0) E.fy--;
 
             wclear(texed); // Delete actual character
             editorPrint(); // Print content
@@ -326,6 +328,7 @@ void inputKeyProcess(int c)
         // Cursor moves to the next line
         E.y++;
         E.sy++;
+        
 
         if (E.y <= E.nRows && E.x != E.wRows[E.y - 1].length)
         {
@@ -376,6 +379,24 @@ void inputKeyProcess(int c)
             editorPrint(); // Print content
 
             // Move cursor
+            E.y = E.nRows - 1;
+            E.sy = E.y - E.fy + 1;
+        }
+        // Move screen to the next line
+        if(E.sy >= E.rows - 1 && E.y < E.nRows)
+        {
+            ty = E.y;
+            tx = E.x;
+            E.fy++;
+            wclear(texed); // Clear window
+            editorPrint(); // Print content
+            E.y = ty;
+            E.x = tx;
+            E.sy = E.rows - 2;
+        }
+        // Repair cursor position
+        if (E.y >= E.nRows)
+        {
             E.y = E.nRows - 1;
             E.sy = E.y - E.fy + 1;
         }
