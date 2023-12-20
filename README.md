@@ -1,6 +1,5 @@
 # Texed
 Texed is a lightweight text editor developed entirely in C. With it, you can edit any text file. Below, you can see screenshots as well as the available features and those that will be coming soon.
-You can use vector as
 
 Thank you for using Texed.
 
@@ -14,9 +13,9 @@ You can use Texed as a foundation to develop your own editor, or you can also co
 
 # Instalation
 - Install dependencies
-- Use make install for installing
-- Use make uninstall for uninstalling
-- run texed "filedir"
+- Use # `make install` for installing
+- Use # `make uninstall` for uninstalling
+- run $ `texed "filedir"`
 
 ### Available features
 - Writing, reading and editing text
@@ -29,6 +28,7 @@ You can use Texed as a foundation to develop your own editor, or you can also co
 
 # Dependencies
 ### - `ncurses`
+### - `gcc`
 
 # Licence
 Licensed under the GPL-3.0 license.
