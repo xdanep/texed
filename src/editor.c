@@ -55,28 +55,58 @@ void editorPrint()
     wattron(texed, COLOR_PAIR(1)); // apply color's configuration
     wmove(texed, 1, 0);            // Move cursor to the first position
 
-    for (E.y = 0; E.y < E.nRows; E.y++)
+    if (E.nRows < E.rows - 1)
     {
-        // Print line larger than the window
-        if (E.wRows[E.y].length >= E.cols)
+        for (E.y = 0; E.y < E.nRows; E.y++)
         {
-            for (E.x = 0; E.x < E.cols; E.x++)
+            // Print line larger than the window
+            if (E.wRows[E.y].length >= E.cols)
             {
-                waddch(texed, E.wRows[E.y].wText[E.x]);
+                for (E.x = 0; E.x < E.cols; E.x++)
+                {
+                    waddch(texed, E.wRows[E.y].wText[E.x]);
+                }
+            }
+            // Print line smaller than the window
+            else
+            {
+                for (E.x = 0; E.x < E.wRows[E.y].length; E.x++)
+                {
+                    waddch(texed, E.wRows[E.y].wText[E.x]);
+                }
+                // Add new line
+                if (E.wRows[E.y].wText[E.wRows[E.y].length - 1] != '\n')
+                    waddch(texed, '\n');
+                else
+                    continue;
             }
         }
-        // Print line smaller than the window
-        else
+    }
+    else
+    {
+        for (E.y = E.fy; E.y - E.fy < E.rows - 2; E.y++)
         {
-            for (E.x = 0; E.x < E.wRows[E.y].length; E.x++)
+            // Print line larger than the window
+            if (E.wRows[E.y].length >= E.cols)
             {
-                waddch(texed, E.wRows[E.y].wText[E.x]);
+                for (E.x = 0; E.x < E.cols; E.x++)
+                {
+                    waddch(texed, E.wRows[E.y].wText[E.x]);
+                }
             }
-            // Add new line
-            if (E.wRows[E.y].wText[E.wRows[E.y].length - 1] != '\n')
-                waddch(texed, '\n');
+            // Print line smaller than the window
             else
-                continue;
+            {
+                for (E.x = 0; E.x < E.wRows[E.y].length; E.x++)
+                {
+                    waddch(texed, E.wRows[E.y].wText[E.x]);
+                }
+                // Add new line
+                if (E.wRows[E.y].wText[E.wRows[E.y].length - 1] != '\n')
+                    waddch(texed, '\n');
+                else
+                    continue;
+            }
         }
     }
 }
@@ -156,6 +186,7 @@ void initEditor(unsigned int mode)
         E.y = 0;
         E.x = 0;
         E.sy = E.y + 1;
+        E.fy = 0;
         E.sx = E.x;
         wmove(texed, E.sy, E.sx); // Move cursor
         wrefresh(texed);          // Refresh window
@@ -275,16 +306,16 @@ void inputKeyProcess(int c)
             E.sy = E.y + 1;
 
             // Line is larger than the window
-            if(E.x >= E.cols)
+            if (E.x >= E.cols)
+            {
+                wmove(texed, E.sy, 0); // Move cursor to the first position
+                wclrtoeol(texed);      // Clear line
+                for (E.sx = E.cols; E.sx < E.wRows[E.y].length; E.sx++)
                 {
-                    wmove(texed, E.sy, 0); // Move cursor to the first position
-                    wclrtoeol(texed);      // Clear line
-                    for(E.sx = E.cols; E.sx < E.wRows[E.y].length; E.sx++)
-                    {
-                        waddch(texed, E.wRows[E.y].wText[E.sx]);
-                    }
-                    E.sx = E.x - E.cols;
+                    waddch(texed, E.wRows[E.y].wText[E.sx]);
                 }
+                E.sx = E.x - E.cols;
+            }
             else
                 E.sx = E.x;
             wmove(texed, E.sy, E.sx);
@@ -461,6 +492,19 @@ void inputKeyProcess(int c)
         // Move cursor to the next line
         E.y++;
         E.sy++;
+        // Move screen to the next line
+        if(E.sy >= E.rows - 1 && E.y < E.nRows)
+        {
+            ty = E.y;
+            tx = E.x;
+            E.fy++;
+            wclear(texed); // Clear window
+            editorPrint(); // Print content
+            E.y = ty;
+            E.x = tx;
+            E.sy = E.rows - 2;
+        }
+        // Repair cursor position
         if (E.y >= E.nRows)
         {
             E.y = E.nRows - 1;
@@ -505,6 +549,18 @@ void inputKeyProcess(int c)
         // Move cursor to the previous line
         E.y--;
         E.sy--;
+        // Move screen to the next line
+        if(E.sy <= 0 && E.y >= 0)
+        {
+            ty = E.y;
+            tx = E.x;
+            E.fy--;
+            wclear(texed); // Clear window
+            editorPrint(); // Print content
+            E.y = ty;
+            E.x = tx;
+            E.sy = 1;
+        }
 
         // If the cursor is on the first position
         if (E.y < 0)

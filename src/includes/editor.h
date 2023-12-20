@@ -22,6 +22,7 @@ typedef struct
     int x;              // Cursor position
     int y;              // Cursor position
     int sx, sy;         // Screen position
+    int fy;             // First y position of the screen
     int rows;           // Screen raws
     int cols;           // Screen columns
     int nRows;          // Number of written raws

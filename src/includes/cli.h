@@ -6,7 +6,7 @@
 #define TEXED_CLI_H
 
 // Defines
-#define VERSION "0.3.0"
+#define VERSION "0.3.1"
 
 // Function prototypes
 void checkArgs(int argc, char **argv);

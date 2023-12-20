@@ -46,7 +46,7 @@ void overwriteFile(const char *dir)
 
 void createDirs(const char *dir)
 {
-    char *TEMP = "temp.txt";
+    char *TEMP = "/.temp.txt";
     // Create file directory
     fileDir = malloc(sizeof(char) * strlen(dir));
     memcpy(fileDir, dir, strlen(dir));
@@ -59,12 +59,12 @@ void createDirs(const char *dir)
         {
             tempFile = malloc(sizeof(char) * i);
             memcpy(tempFile, dir, i);
-            tempFile[i] = '\0';
+            tempFile[strlen(tempFile)] = '\0';
             break;
         }
     }
 
-    tempFile = realloc(tempFile, sizeof(char) * (strlen(fileDir) + sizeof(char) * strlen(TEMP)));
+    tempFile = realloc(tempFile, sizeof(char) * (strlen(tempFile) + sizeof(char) * strlen(TEMP)));
     if (tempFile == NULL)
     {
         fprintf(stderr, "Error: Could not allocate memory for tempFile.\n");
