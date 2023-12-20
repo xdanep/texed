@@ -12,6 +12,12 @@ You can use Texed as a foundation to develop your own editor, or you can also co
 # Screenshots
 <br> <img src="https://github.com/xdanep/texed/blob/master/screenshots/texed.png"/> <br>
 
+# Instalation
+- Install dependencies
+- Use make install for installing
+- Use make uninstall for uninstalling
+- run texed "filedir"
+
 ### Available features
 - Writing, reading and editing text
 - Status bar (Taskit "Version" "File")
