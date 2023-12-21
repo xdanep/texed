@@ -1,6 +1,9 @@
 //
 // Created by xdanep on 13/12/23.
 //
+// Copyright (c) 2016, Salvatore Sanfilippo <antirez at gmail dot com>
+//
+// All rights reserved.
 
 #include <stdlib.h>
 #include <string.h>

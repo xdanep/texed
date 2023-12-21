@@ -9,7 +9,7 @@ CC = gcc
 LLIBS = -lncurses
 
 # Compiler flags
-CFLAGS = -Wall -Werror -Wextra -std=gnu17 -O2 -DNDEBUG
+CFLAGS = -Wall -g -Wextra -O2 -DNDEBUG
 
 # Directories
 SRCDIR = src
@@ -43,8 +43,11 @@ clean:
 	rm -rf $(BUILDDIR)
 
 install:
-	install -m755 texed /usr/bin
+	install -m755 /build/bin/texed /usr/bin
+	mkdir -p /usr/share/licenses/texed
+	install -m644 LICENSE /usr/share/licenses/texed
 	rm -rf $(BUILDDIR)
 
 uninstall:
 	$(RM) /usr/bin/texed
+	rm -rf /usr/share/licenses/texed

@@ -3,19 +3,24 @@ Texed is a lightweight text editor developed entirely in C. With it, you can edi
 
 Thank you for using Texed.
 
-# Contributing
-You can use Texed as a foundation to develop your own editor, or you can also contribute to the project in one of the following ways:
-- Submit bugs and feature requests, and help us verify as they are checked in
-- Review source code changes
-
-# Screenshots
+## Screenshots
 <br> <img src="https://github.com/xdanep/texed/blob/master/screenshots/texed.png"/> <br>
 
-# Installation
+## Installation
 - Install dependencies
-- Use # `make install` for installing
-- Use # `make uninstall` for uninstalling
-- run $ `texed "filedir"`
+```
+Debian based:
+$ sudo apt install build-essential libncurses-dev libncursesw6
+
+Fedora/RHEL:
+$ sudo dnf install gcc ncurses ncurses-devel
+
+Arch based:
+$ sudo pacman -Sy gcc ncurses
+```
+- `# make install` move files to properly dirs and include them to PATH
+- `# make uninstall` remove files 
+- Run `$ texed "filedir"`
 
 ### Available features
 - Writing, reading and editing text
@@ -24,11 +29,22 @@ You can use Texed as a foundation to develop your own editor, or you can also co
 - Vertical and horizontal scrolling
 
 ### Features to be added
-- Package
+
+### Issues
 
 # Dependencies
 ### - `ncurses`
 ### - `gcc`
 
-# Licence
+## Contributing
+You can use Texed as a foundation to develop your own editor, or you can also contribute to the project in one of the following ways:
+- Submit bugs and feature requests, and help us verify as they are checked in
+- Review source code changes
+
+## Licence
 Licensed under the GPL-3.0 license.
+
+Code from https://github.com/snaptoken/kilo-src licensed under BSD-2-Clause license
+Copyright (c) 2016, Salvatore Sanfilippo <antirez at gmail dot com>
+
+All rights reserved.
