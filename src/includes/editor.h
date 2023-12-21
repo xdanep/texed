@@ -6,7 +6,6 @@
 #ifndef TEXED_EDITOR_H
 #define TEXED_EDITOR_H
 // Variables
-#define KILO_TAB_STOP 8
 #define CTRL_KEY(k) ((k) & 0x1f)
 
 typedef struct

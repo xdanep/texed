@@ -5,6 +5,8 @@
 
 #ifndef TEXED_TEXT_H
 #define TEXED_TEXT_H
+// Defines
+#define KILO_TAB_STOP 8
 
 // Function prototypes
 void editorAppendRow(char *s, size_t len);

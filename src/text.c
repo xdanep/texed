@@ -61,7 +61,7 @@ void editorUpdateRow(writtenRows *row)
     if (row->wText == NULL)
       wTextIsNULL = 1;
           
-    if (wTextIsNULL == 1)
+    if (wTextIsNULL == 0)
     {
       for (j = 0; j < row->length; j++)
       {
@@ -76,7 +76,7 @@ void editorUpdateRow(writtenRows *row)
         exit(EXIT_FAILURE);
 
     int idx = 0;
-    if (wTextIsNULL == 1)
+    if (wTextIsNULL == 0)
     {
       for (j = 0; j < row->length; j++)
       {
