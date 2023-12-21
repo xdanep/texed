@@ -3,3 +3,7 @@
 /.cache/
 /.idea/
 /build/
+/.vscode/
+
+# Files
+debug.log

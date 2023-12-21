@@ -18,4 +18,6 @@ add_executable(texed
         src/cli.c
         src/includes/cli.h
         src/text.c
-        src/includes/text.h)
+        src/includes/text.h
+        src/log.c
+        src/includes/log.h)
