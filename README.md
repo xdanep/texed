@@ -31,6 +31,8 @@ $ sudo pacman -Sy gcc ncurses
 ### Features to be added
 
 ### Issues
+- You need to press a key to start the program
+- Latin characters doesn't display correctly
 
 ## Dependencies
 ### - `ncurses`
