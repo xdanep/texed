@@ -32,7 +32,7 @@ $ sudo pacman -Sy gcc ncurses
 
 ### Issues
 
-# Dependencies
+## Dependencies
 ### - `ncurses`
 ### - `gcc`
 
