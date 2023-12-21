@@ -5,16 +5,25 @@
 #include <locale.h>
 #include <string.h>
 #include <stdlib.h>
+#include <termios.h>
+#include <unistd.h>
 #include "includes/editor.h"
 #include "includes/screen.h"
 #include "includes/file.h"
 #include "includes/cli.h"
 
+struct termios original_state;
 WINDOW *texed; // Window
 char *title;
 
 void startScreen()
 {
+    if (tcgetattr(STDIN_FILENO, &original_state) == -1)
+    {
+        fprintf(stderr, "Error getting terminal attributes");
+        exit(EXIT_FAILURE);
+    }
+    
     setlocale(LC_ALL, ""); // Set locale (es_MX.ISO-8859-1 or es_MX.UTF-8)
     initscr();             // Start curses mode
     E.x = 0;               // set the x position
@@ -79,4 +88,13 @@ void screenInfo()
         exit(EXIT_FAILURE);
     }
     strcat(title, fileDir);
+}
+
+void restore_terminal_state()
+{
+    if (tcsetattr(STDIN_FILENO, TCSANOW, &original_state) == -1)
+    {
+        fprintf(stderr, "Error setting terminal attributes");
+        exit(EXIT_FAILURE);
+    }
 }
