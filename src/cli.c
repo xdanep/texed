@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "includes/cli.h"
+#include "includes/version.h"
 
 void checkArgs(int argc, char **argv)
 {
@@ -21,7 +22,8 @@ void checkArgs(int argc, char **argv)
         if (strcmp(argv[1], "--version") == 0)
         {
             // Print version number
-            printf("Texed version %s\nDeveloped by Xdanep\n", VERSION);
+            printf("Texed version %s\n", VERSION);
+            printf("Copyright Xdanep and Aarch64 (C) 2023\n");
             exit(EXIT_SUCCESS);
         }
         else if (strcmp(argv[1], "--help") == 0)

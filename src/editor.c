@@ -9,6 +9,7 @@
 #include "includes/screen.h"
 #include "includes/file.h"
 #include "includes/text.h"
+#include "includes/log.h"
 
 EditConfig E; // Window size
 
@@ -160,7 +161,7 @@ void saveFile()
     FILE *TEMP = fopen(tempFile, "w");
     if (TEMP == NULL)
     {
-        fprintf(stderr, "Error: Could not create file at the specified address.\n");
+        write_log("editor.c: saveFile: Could not create file at the specified address.\n");
         exit(EXIT_FAILURE);
     }
     for (int i = 0; i < E.nRows; i++)
@@ -196,7 +197,7 @@ void initEditor(unsigned int mode)
 
     else
     {
-        fprintf(stderr, "Error: Invalid mode.\n");
+        write_log("editor.c: initEditor: Invalid mode.\n");
         exit(EXIT_FAILURE);
     }
 }
