@@ -6,6 +6,7 @@
 #include "includes/editor.h"
 #include "includes/screen.h"
 #include "includes/cli.h"
+#include "includes/log.h"
 
 char *fileDir = NULL;
 char *tempFile = NULL;
@@ -20,6 +21,8 @@ int main(int argc, char *argv[])
     // Create file
     mode = makeTextFile(fileDir);
 
+    init_log();
+    
     startScreen(); // Start screen
     screenInfo();  // Generate screen info
 
