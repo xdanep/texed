@@ -10,7 +10,8 @@
 #include "includes/editor.h"
 #include "includes/screen.h"
 #include "includes/file.h"
-#include "includes/cli.h"
+#include "includes/version.h"
+#include "includes/log.h"
 
 struct termios original_state;
 WINDOW *texed; // Window
@@ -20,7 +21,7 @@ void startScreen()
 {
     if (tcgetattr(STDIN_FILENO, &original_state) == -1)
     {
-        fprintf(stderr, "Error getting terminal attributes");
+        write_log("screen.c: startScreen: Could not getting terminal attributes");
         exit(EXIT_FAILURE);
     }
     
@@ -45,7 +46,7 @@ void startScreen()
         endwin(); // close ncurses
         refresh();
 
-        fputs("Could not use colors.", stderr);
+        write_log("screen.c: startScreen: Could not use colors.");
 
         exit(EXIT_FAILURE);
     }
@@ -66,7 +67,7 @@ void screenInfo()
 
     if (title == NULL)
     {
-        fprintf(stderr, "Error: Could not allocate memory for title.\n");
+        write_log("screen.c: screenInfo: Could not allocate memory for title.\n");
         exit(EXIT_FAILURE);
     }
     strcat(title, VERSION);
@@ -75,7 +76,7 @@ void screenInfo()
 
     if (title == NULL)
     {
-        fprintf(stderr, "Error: Could not allocate memory for title.\n");
+        write_log("screen.c: screenInfo: Could not allocate memory for title.\n");
         exit(EXIT_FAILURE);
     }
     strcat(title, " - ");
@@ -84,7 +85,7 @@ void screenInfo()
 
     if (title == NULL)
     {
-        fprintf(stderr, "Error: Could not allocate memory for title.\n");
+        write_log("screen.c: screenInfo: Could not allocate memory for title.\n");
         exit(EXIT_FAILURE);
     }
     strcat(title, fileDir);
@@ -94,7 +95,7 @@ void restore_terminal_state()
 {
     if (tcsetattr(STDIN_FILENO, TCSANOW, &original_state) == -1)
     {
-        fprintf(stderr, "Error setting terminal attributes");
+        write_log("screen.c: restore_terminal_state: Could not setting terminal attributes");
         exit(EXIT_FAILURE);
     }
 }

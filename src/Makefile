@@ -9,7 +9,7 @@ CC = gcc
 LLIBS = -lncurses
 
 # Compiler flags
-CFLAGS = -Wall -Werror -Wextra -std=gnu17
+CFLAGS = -Wall -Wextra -g
 
 # Objects
 OBJS = \
@@ -18,7 +18,8 @@ OBJS = \
 		file.o\
 		main.o\
 		screen.o\
-		text.o 
+		text.o \
+		log.o
 
 # Remove command
 RM = rm -f

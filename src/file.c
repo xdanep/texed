@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "includes/file.h"
+#include "includes/log.h"
 
 FILE *fileIn;
 
@@ -20,7 +21,7 @@ unsigned int makeTextFile(const char *dir)
         // Verify file
         if (fileIn == NULL)
         {
-            fprintf(stderr, "Error: Could not create file at the specified address.\n");
+            write_log("file.c: makeTextFile: Could not create file at the specified address.\n");
             exit(EXIT_FAILURE);
         }
     }
@@ -39,7 +40,7 @@ void overwriteFile(const char *dir)
     // Verify file
     if (fileIn == NULL)
     {
-        fprintf(stderr, "Error: Could not create file at the specified address.\n");
+        write_log("file.c: overwriteFile: Could not create file at the specified address.\n");
         exit(EXIT_FAILURE);
     }
 }
@@ -52,12 +53,12 @@ void createDirs(const char *dir)
     fileDir = malloc(sizeof(char) * (strlen(dir) + 1));
     if (fileDir == NULL)
     {
-        fprintf(stderr, "Error: Could not allocate memory for fileDir.\n");
+        write_log("file.c: createDirs: Could not allocate memory for fileDir.\n");
         exit(EXIT_FAILURE);
     }
     if (strcpy(fileDir, dir) == NULL)
     {
-        fprintf(stderr, "Error: Could not copy directory path to fileDir.\n");
+        write_log("file.c: createDirs: Could not copy directory path to fileDir.\n");
         free(fileDir);
         exit(EXIT_FAILURE);
     }
@@ -70,13 +71,13 @@ void createDirs(const char *dir)
         tempFile = malloc(sizeof(char) * (len + strlen(TEMP) + 1));
         if (tempFile == NULL)
         {
-            fprintf(stderr, "Error: Could not allocate memory for tempFile.\n");
+            write_log("file.c: createDirs: Could not allocate memory for tempFile.\n");
             free(fileDir);
             exit(EXIT_FAILURE);
         }
         if (strncpy(tempFile, dir, len) == NULL)
         {
-            fprintf(stderr, "Error: Could not copy directory path to tempFile.\n");
+            write_log("file.c: createDirs: Could not copy directory path to tempFile.\n");
             free(fileDir);
             free(tempFile);
             exit(EXIT_FAILURE);
@@ -89,13 +90,13 @@ void createDirs(const char *dir)
         tempFile = malloc(sizeof(char) * (strlen(dir) + strlen(TEMP) + 1));
         if (tempFile == NULL)
         {
-            fprintf(stderr, "Error: Could not allocate memory for tempFile.\n");
+            write_log("file.c: createDirs: Could not allocate memory for tempFile.\n");
             free(fileDir);
             exit(EXIT_FAILURE);
         }
         if (strcpy(tempFile, dir) == NULL)
         {
-            fprintf(stderr, "Error: Could not copy directory path to tempFile.\n");
+            write_log("file.c: createDirs: Could not copy directory path to tempFile.\n");
             free(fileDir);
             free(tempFile);
             exit(EXIT_FAILURE);
@@ -105,7 +106,7 @@ void createDirs(const char *dir)
     // Concatenate TEMP to tempFile
     if (strcat(tempFile, TEMP) == NULL)
     {
-        fprintf(stderr, "Error: Could not concatenate TEMP to tempFile.\n");
+        write_log("file.c: createDirs: Could not concatenate TEMP to tempFile.\n");
         free(fileDir);
         free(tempFile);
         exit(EXIT_FAILURE);
