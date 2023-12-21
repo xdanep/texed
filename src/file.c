@@ -46,29 +46,68 @@ void overwriteFile(const char *dir)
 
 void createDirs(const char *dir)
 {
-    char *TEMP = "/.temp.txt";
+    char *TEMP = ".temp.txt";
+
     // Create file directory
-    fileDir = malloc(sizeof(char) * strlen(dir));
-    memcpy(fileDir, dir, strlen(dir));
-    fileDir[strlen(dir)] = '\0';
+    fileDir = malloc(sizeof(char) * (strlen(dir) + 1));
+    if (fileDir == NULL)
+    {
+        fprintf(stderr, "Error: Could not allocate memory for fileDir.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (strcpy(fileDir, dir) == NULL)
+    {
+        fprintf(stderr, "Error: Could not copy directory path to fileDir.\n");
+        free(fileDir);
+        exit(EXIT_FAILURE);
+    }
 
     // Create temp file directory
-    for (unsigned long i = strlen(dir); i > 0; i--)
+    const char *lastSlash = strrchr(dir, '/');
+    if (lastSlash != NULL)
     {
-        if (dir[i] == '/')
+        size_t len = lastSlash - dir + 1;
+        tempFile = malloc(sizeof(char) * (len + strlen(TEMP) + 1));
+        if (tempFile == NULL)
         {
-            tempFile = malloc(sizeof(char) * i);
-            memcpy(tempFile, dir, i);
-            tempFile[strlen(tempFile)] = '\0';
-            break;
+            fprintf(stderr, "Error: Could not allocate memory for tempFile.\n");
+            free(fileDir);
+            exit(EXIT_FAILURE);
+        }
+        if (strncpy(tempFile, dir, len) == NULL)
+        {
+            fprintf(stderr, "Error: Could not copy directory path to tempFile.\n");
+            free(fileDir);
+            free(tempFile);
+            exit(EXIT_FAILURE);
+        }
+        tempFile[len] = '\0';
+    }
+    else
+    {
+        // Handle the case when there is no '/'
+        tempFile = malloc(sizeof(char) * (strlen(dir) + strlen(TEMP) + 1));
+        if (tempFile == NULL)
+        {
+            fprintf(stderr, "Error: Could not allocate memory for tempFile.\n");
+            free(fileDir);
+            exit(EXIT_FAILURE);
+        }
+        if (strcpy(tempFile, dir) == NULL)
+        {
+            fprintf(stderr, "Error: Could not copy directory path to tempFile.\n");
+            free(fileDir);
+            free(tempFile);
+            exit(EXIT_FAILURE);
         }
     }
 
-    tempFile = realloc(tempFile, sizeof(char) * (strlen(tempFile) + sizeof(char) * strlen(TEMP)));
-    if (tempFile == NULL)
+    // Concatenate TEMP to tempFile
+    if (strcat(tempFile, TEMP) == NULL)
     {
-        fprintf(stderr, "Error: Could not allocate memory for tempFile.\n");
+        fprintf(stderr, "Error: Could not concatenate TEMP to tempFile.\n");
+        free(fileDir);
+        free(tempFile);
         exit(EXIT_FAILURE);
     }
-    strcat(tempFile, TEMP);
 }
