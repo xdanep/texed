@@ -56,9 +56,19 @@ void editorUpdateRow(writtenRows *row)
 {
     int tabs = 0;
     int j;
-    for (j = 0; j < row->length; j++)
-        if (row->wText[j] == '\t')
-            tabs++;
+    int wTextIsNULL = 0;
+    
+    if (row->wText == NULL)
+      wTextIsNULL = 1;
+          
+    if (wTextIsNULL == 1)
+    {
+      for (j = 0; j < row->length; j++)
+      {
+          if (row->wText[j] == '\t')
+              tabs++;
+      }
+    }
 
     free(row->render);
     row->render = malloc(row->length + tabs * (KILO_TAB_STOP - 1) + 1);
@@ -66,18 +76,22 @@ void editorUpdateRow(writtenRows *row)
         exit(EXIT_FAILURE);
 
     int idx = 0;
-    for (j = 0; j < row->length; j++)
+    if (wTextIsNULL == 1)
     {
-        if (row->wText[j] == '\t')
-        {
-            row->render[idx++] = ' ';
-            while (idx % KILO_TAB_STOP != 0)
-                row->render[idx++] = ' ';
-        }
-        else
-        {
-            row->render[idx++] = row->wText[j];
-        }
+      for (j = 0; j < row->length; j++)
+      {
+          if (row->wText[j] == '\t')
+          {
+              do
+              {
+                  row->render[idx++] = ' ';
+              } while (idx % KILO_TAB_STOP != 0);
+          }
+          else
+          {
+              row->render[idx++] = row->wText[j];
+          }
+      }
     }
     row->render[idx] = '\0';
     row->rsize = idx;
