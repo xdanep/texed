@@ -9,7 +9,7 @@ CC = gcc
 LLIBS = -lncurses
 
 # Compiler flags
-CFLAGS = -Wall -g -Wextra
+CFLAGS = -Wall -Wextra -g
 
 # Directories
 SRCDIR = src
