@@ -10,7 +10,6 @@
 
 // Variables
 extern struct termios original_state;
-extern WINDOW *texed; // Window
 extern char *title;
 
 // Function prototypes

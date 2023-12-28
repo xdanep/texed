@@ -14,7 +14,6 @@
 #include "includes/log.h"
 
 struct termios original_state;
-WINDOW *texed; // Window
 char *title;
 
 void startScreen()
@@ -39,8 +38,6 @@ void startScreen()
     noecho();                         // No echo input
     getmaxyx(stdscr, E.rows, E.cols); // get the screen size
 
-    texed = newwin(E.rows, E.cols, 0, 0); // Create a new window
-
     if (start_color() == ERR || !has_colors() || !can_change_color()) // start color
     {
         endwin(); // close ncurses
@@ -52,7 +49,7 @@ void startScreen()
     }
     init_pair(1, COLOR_WHITE, COLOR_BLACK); // set white text on black background
     init_pair(2, COLOR_BLACK, COLOR_WHITE); // set black text on white background
-    wattron(texed, COLOR_PAIR(1));          // apply color's configuration
+    attron(COLOR_PAIR(1));          // apply color's configuration
 }
 
 void screenInfo()
