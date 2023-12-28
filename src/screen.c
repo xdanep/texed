@@ -25,14 +25,14 @@ void startScreen()
         exit(EXIT_FAILURE);
     }
     
+    // Initialize a new window
     setlocale(LC_ALL, ""); // Set locale (es_MX.ISO-8859-1 or es_MX.UTF-8)
     initscr();             // Start curses mode
     E.x = 0;               // set the x position
     E.y = 0;               // set the y position
     E.nRows = 0;
     E.wRows = NULL;
-
-    // Initialize a new window
+    
     raw();                            // enter raw mode
     keypad(stdscr, TRUE);             // Obtain F1, F2 etc...
     cbreak();                         // Line buffering disabled
@@ -53,9 +53,6 @@ void startScreen()
     init_pair(1, COLOR_WHITE, COLOR_BLACK); // set white text on black background
     init_pair(2, COLOR_BLACK, COLOR_WHITE); // set black text on white background
     wattron(texed, COLOR_PAIR(1));          // apply color's configuration
-
-    wrefresh(texed); // print on the screen
-    getch();         // Wait for user input
 }
 
 void screenInfo()

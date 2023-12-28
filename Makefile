@@ -42,8 +42,8 @@ $(BUILDDIR):
 clean:
 	rm -rf $(BUILDDIR)
 
-install:
-	install -m755 /build/bin/texed /usr/bin
+install: all
+	install -m755 build/bin/texed /usr/bin
 	mkdir -p /usr/share/licenses/texed
 	install -m644 LICENSE /usr/share/licenses/texed
 	rm -rf $(BUILDDIR)
